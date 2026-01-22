@@ -3,7 +3,8 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 
-// Create Express app
+import authRoutes from "./routes/authRoutes.js";
+
 const app = express();
 
 // ====== MIDDLEWARES ======
@@ -29,8 +30,8 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Future API routes can be added here
-// e.g., app.use("/api/users", userRoutes);
+// Auth routes
+app.use("/v1/api/auth", authRoutes);
 
 // ====== EXPORT APP ======
 export default app;
