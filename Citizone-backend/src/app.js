@@ -2,6 +2,8 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
+
 
 import authRoutes from "./routes/authRoutes.js";
 
@@ -11,6 +13,9 @@ const app = express();
 
 // JSON parser
 app.use(express.json());
+
+// Parse cookies
+app.use(cookieParser());
 
 // Enable CORS
 app.use(cors());
@@ -23,7 +28,7 @@ if (process.env.NODE_ENV === "development") {
 // ====== ROUTES ======
 
 // Health check
-app.get("/api/health", (req, res) => {
+app.get("citizone/api/health", (req, res) => {
   res.status(200).json({
     status: "success",
     message: "API is running 🚀",
@@ -31,7 +36,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // Auth routes
-app.use("/v1/api/auth", authRoutes);
+app.use("/citizone/v1/api/auth", authRoutes);
 
 // ====== EXPORT APP ======
 export default app;
