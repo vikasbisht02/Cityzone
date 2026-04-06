@@ -10,6 +10,6 @@ export const generateOTP = () => {
 /**
  * Hash OTP for secure storage
  */
-export const hashOTP = (otp) => {
+export const hashOTP = async (otp) => {
   return crypto.createHash("sha256").update(otp).digest("hex");
 };
