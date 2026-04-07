@@ -46,3 +46,6 @@ test-output/
 *.tgz
 *.swp
 *.swo
+
+# firebase
+src/config/firebaseServiceAccount.json
