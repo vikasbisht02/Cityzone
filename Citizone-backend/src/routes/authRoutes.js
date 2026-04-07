@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUserByEmail, loginUserByEmail, mobileAuth, verifyOTP, forgotPassword, resetPassword, logoutUser, getCurrentUser } from "../controllers/authControllers.js";
+import { registerUserByEmail, loginUserByEmail, mobileAuth, verifyOTP, forgotPassword, resetPassword, logoutUser, getCurrentUser, verifyFirebaseToken } from "../controllers/authControllers.js";
 import { protectUserRoute } from "../middleware/authUserMiddleware.js";
 
 const router = express.Router();
@@ -29,5 +29,8 @@ router.post(
     protectUserRoute, // Middleware validates JWT from cookie
     getCurrentUser    // Returns user info
 );
+
+// Get firebase access token
+router.post("/firebase/verify", verifyFirebaseToken);
 
 export default router;
