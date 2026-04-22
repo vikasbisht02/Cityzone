@@ -99,11 +99,6 @@ export const registerUserByEmail = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Please verify your email.",
-      data: {
-        userId: user._id,
-        email: user.email,
-        createdAt: user.createdAt,
-      },
     });
 
   } catch (error) {
@@ -179,14 +174,11 @@ export const loginUserByEmail = async (req, res) => {
     /**
      * Step 6: Respond (JWT will be added later)
      */
+    const { password: userPassword , ...userData } = user._doc;
     return res.status(200).json({
       success: true,
       message: "Login successful",
-      data: {
-        userId: user._id,
-        email: user.email,
-        lastLogin: user.lastLogin,
-      },
+      data: userData,
     });
   } catch (error) {
     return res.status(500).json({
@@ -236,7 +228,7 @@ export const mobileAuth = async (req, res) => {
     if (!user) {
       // Signup flow (no password yet)
       user = await User.create({
-        MobileNumber: number,
+        mobileNumber: number,
         verificationCode: hashedOTP,
         verificationCodeExpireAt: getMinutesFromNow(10), // expires in 10 min
       });
@@ -349,15 +341,11 @@ export const verifyOTP = async (req, res) => {
 
     // Generate token again
     generateTokenAndSetCookie(res, user._id, user.role);
-
+    const { password, ...userData } = user._doc;
     return res.status(200).json({
       success: true,
       message: "Login successful",
-      data: {
-        userId: user._id,
-        number: user.MobileNumber,
-        lastLogin: user.lastLogin,
-      },
+      data: userData,
     });
   } catch (err) {
     return res.status(401).json({
@@ -530,7 +518,7 @@ export const logoutUser = async (req, res) => {
  */
 export const getCurrentUser = async (req, res) => {
   try {
-    res.json(req.user);
+    res.json({success: true, message: "fetch user data successfully", data: req.user});
   } catch (error) {
     console.error("Error in getCurrentUser controller:", error);
     res.status(500).json({ message: "Server error" });
@@ -558,11 +546,11 @@ export const verifyFirebaseToken = async (req, res) => {
     /**
      * Find or create user
      */
-    let user = await User.findOne({ MobileNumber: phone });
+    let user = await User.findOne({ mobileNumber: phone });
 
     if (!user) {
       user = await User.create({
-        MobileNumber: phone,
+        mobileNumber: phone,
         isPhoneVerified: true,
       });
     }
