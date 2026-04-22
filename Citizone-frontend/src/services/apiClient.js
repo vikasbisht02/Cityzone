@@ -35,8 +35,9 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Token expired or unauthorized
+      // Let the error propagate so auth handlers can manage the redirect
+      // Avoid window.location.href to prevent infinite reload loops
       localStorage.removeItem('citizoneCookie');
-      window.location.href = '/login';
     }
     
     // Handle CORS errors
