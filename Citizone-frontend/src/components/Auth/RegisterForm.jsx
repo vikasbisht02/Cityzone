@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { registerStart, registerSuccess, registerFailure } from '../../redux/slices/authSlice';
-import { registerByEmail } from '../../services/authService';
+import { useRegisterMutation } from '../../redux/api';
 import { useForm } from '../../hooks';
 import { validateRegisterForm } from '../../utils/validators';
 import { Button, Input, Alert } from '../Common';
@@ -15,6 +15,7 @@ import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../constants';
  */
 const RegisterForm = ({ onSuccess }) => {
   const dispatch = useDispatch();
+  const [register] = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState('');
 
@@ -29,12 +30,12 @@ const RegisterForm = ({ onSuccess }) => {
         }
 
         dispatch(registerStart());
-        const response = await registerByEmail({
+        const response = await register({
           fullName: data.fullName,
           email: data.email,
           phoneNumber: data.phoneNumber,
           password: data.password,
-        });
+        }).unwrap();
 
         dispatch(registerSuccess({
           user: response.user,
@@ -43,8 +44,8 @@ const RegisterForm = ({ onSuccess }) => {
         setApiError('');
         if (onSuccess) onSuccess();
       } catch (error) {
-        dispatch(registerFailure(error.message));
-        setApiError(error.message);
+        dispatch(registerFailure(error.message || 'Registration failed'));
+        setApiError(error.message || 'Registration failed');
       }
     }
   );

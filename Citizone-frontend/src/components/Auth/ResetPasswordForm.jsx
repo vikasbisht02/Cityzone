@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useForm } from '../../hooks';
 import { Button, Input, Alert } from '../Common';
-import { resetPassword } from '../../services/authService';
+import { useResetPasswordMutation } from '../../redux/api';
 import {
   resetPasswordStart,
   resetPasswordSuccess,
@@ -18,6 +18,7 @@ import {
  */
 const ResetPasswordForm = ({ token, onSuccess }) => {
   const dispatch = useDispatch();
+  const [resetPasswordMutation] = useResetPasswordMutation();
   const [apiError, setApiError] = useState('');
   const [showPasswords, setShowPasswords] = useState(false);
 
@@ -36,17 +37,16 @@ const ResetPasswordForm = ({ token, onSuccess }) => {
 
       try {
         dispatch(resetPasswordStart());
-        const response = await resetPassword({
+        const response = await resetPasswordMutation({
           token,
           password: data.password,
-          confirmPassword: data.confirmPassword,
-        });
+        }).unwrap();
         dispatch(resetPasswordSuccess());
         setApiError('');
         if (onSuccess) onSuccess();
       } catch (error) {
-        dispatch(resetPasswordFailure(error.message));
-        setApiError(error.message);
+        dispatch(resetPasswordFailure(error.message || 'Password reset failed'));
+        setApiError(error.message || 'Password reset failed');
       }
     }
   );

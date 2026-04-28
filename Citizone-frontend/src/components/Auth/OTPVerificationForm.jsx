@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Button, Input, Alert, LoadingSpinner } from '../Common';
-import { verifyOTP } from '../../services/authService';
+import { useVerifyOTPMutation } from '../../redux/api';
 import {
   verifyOTPStart,
   verifyOTPSuccess,
@@ -19,6 +19,7 @@ import {
  */
 const OTPVerificationForm = ({ identifier, type = 'email', onSuccess, onResend }) => {
   const dispatch = useDispatch();
+  const [verifyOTPMutation] = useVerifyOTPMutation();
   const [otp, setOtp] = useState('');
   const [apiError, setApiError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,7 +54,7 @@ const OTPVerificationForm = ({ identifier, type = 'email', onSuccess, onResend }
     try {
       setIsSubmitting(true);
       dispatch(verifyOTPStart());
-      const response = await verifyOTP(otp);
+      const response = await verifyOTPMutation(otp).unwrap();
       dispatch(
         verifyOTPSuccess({
           user: response.data,
@@ -64,8 +65,8 @@ const OTPVerificationForm = ({ identifier, type = 'email', onSuccess, onResend }
       setApiError('');
       if (onSuccess) onSuccess();
     } catch (error) {
-      dispatch(verifyOTPFailure(error.message));
-      setApiError(error.message);
+      dispatch(verifyOTPFailure(error.message || 'OTP verification failed'));
+      setApiError(error.message || 'OTP verification failed');
       setOtp('');
     } finally {
       setIsSubmitting(false);

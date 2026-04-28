@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useForm } from '../../hooks';
 import { Button, Input, Alert } from '../Common';
-import { forgotPassword } from '../../services/authService';
+import { useForgotPasswordMutation } from '../../redux/api';
 import {
   forgotPasswordStart,
   forgotPasswordSuccess,
@@ -18,6 +18,7 @@ import { isValidEmail } from '../../utils/validators';
  */
 const ForgotPasswordForm = ({ onSuccess }) => {
   const dispatch = useDispatch();
+  const [forgotPasswordMutation] = useForgotPasswordMutation();
   const [apiError, setApiError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -31,7 +32,7 @@ const ForgotPasswordForm = ({ onSuccess }) => {
 
       try {
         dispatch(forgotPasswordStart());
-        const response = await forgotPassword(data.email);
+        const response = await forgotPasswordMutation(data.email).unwrap();
         dispatch(forgotPasswordSuccess());
         setApiError('');
         setSuccessMsg(
@@ -41,8 +42,8 @@ const ForgotPasswordForm = ({ onSuccess }) => {
           if (onSuccess) onSuccess();
         }, 2000);
       } catch (error) {
-        dispatch(forgotPasswordFailure(error.message));
-        setApiError(error.message);
+        dispatch(forgotPasswordFailure(error.message || 'Failed to send reset email'));
+        setApiError(error.message || 'Failed to send reset email');
       }
     }
   );

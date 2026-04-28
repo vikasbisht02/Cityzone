@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useForm } from '../../hooks';
 import { Button, Input, Alert } from '../Common';
-import { mobileAuth } from '../../services/authService';
+import { useMobileAuthMutation } from '../../redux/api';
 import {
   mobileAuthStart,
   mobileAuthSent,
@@ -18,6 +18,7 @@ import {
  */
 const MobileAuthForm = ({ onOTPSent, onToggleEmailAuth }) => {
   const dispatch = useDispatch();
+  const [mobileAuthMutation] = useMobileAuthMutation();
   const [apiError, setApiError] = useState('');
 
   const { values, errors, handleChange, handleSubmit, isSubmitting } = useForm(
@@ -32,7 +33,7 @@ const MobileAuthForm = ({ onOTPSent, onToggleEmailAuth }) => {
 
       try {
         dispatch(mobileAuthStart());
-        const response = await mobileAuth(number);
+        const response = await mobileAuthMutation(number).unwrap();
         dispatch(
           mobileAuthSent({
             mobileNumber: number,
@@ -41,8 +42,8 @@ const MobileAuthForm = ({ onOTPSent, onToggleEmailAuth }) => {
         setApiError('');
         if (onOTPSent) onOTPSent(number);
       } catch (error) {
-        dispatch(mobileAuthFailure(error.message));
-        setApiError(error.message);
+        dispatch(mobileAuthFailure(error.message || 'Mobile auth failed'));
+        setApiError(error.message || 'Mobile auth failed');
       }
     }
   );

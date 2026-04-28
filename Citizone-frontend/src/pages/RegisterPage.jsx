@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/Layout/AuthLayout';
 import { useForm } from '../hooks';
 import { Button, Input, Alert, Card } from '../components/Common';
-import { registerByEmail } from '../services/authService';
+import { useRegisterMutation } from '../redux/api';
 import {
   registerStart,
   registerSuccess,
@@ -20,6 +20,7 @@ import { isValidEmail, isValidPassword } from '../utils/validators';
 const RegisterPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [register] = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -48,11 +49,11 @@ const RegisterPage = () => {
 
       try {
         dispatch(registerStart());
-        const response = await registerByEmail({
+        const response = await register({
           email: data.email,
           password: data.password,
           confirmPassword: data.confirmPassword,
-        });
+        }).unwrap();
 
         dispatch(
           registerSuccess({

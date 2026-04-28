@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../hooks';
 import Button from './Button';
-import { logoutUser } from '../../services/authService';
+import { useLogoutMutation } from '../../redux/api';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
@@ -12,12 +12,13 @@ import { useNavigate } from 'react-router-dom';
  */
 const Header = () => {
   const { user, isAuthenticated, role } = useAuth();
+  const [logoutMutation] = useLogoutMutation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await logoutUser();
+      await logoutMutation().unwrap();
       dispatch(logout());
       navigate('/login');
     } catch (error) {

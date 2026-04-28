@@ -6,3 +6,4 @@ export { default as ForgotPasswordPage } from './ForgotPasswordPage';
 export { default as ResetPasswordPage } from './ResetPasswordPage';
 export { default as UserDashboard } from './UserDashboard';
 export { default as AdminDashboard } from './AdminDashboard';
+export { default as SuperAdminDashboard } from './SuperAdminDashboard';

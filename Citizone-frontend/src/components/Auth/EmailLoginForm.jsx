@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useForm } from '../../hooks';
 import { Button, Input, Alert } from '../Common';
-import { loginByEmail } from '../../services/authService';
+import { useLoginMutation } from '../../redux/api';
 import {
   loginStart,
   loginSuccess,
@@ -19,6 +19,7 @@ import { isValidEmail } from '../../utils/validators';
  */
 const EmailLoginForm = ({ onSuccess, onToggleMobileAuth }) => {
   const dispatch = useDispatch();
+  const [login] = useLoginMutation();
   const [apiError, setApiError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -36,7 +37,7 @@ const EmailLoginForm = ({ onSuccess, onToggleMobileAuth }) => {
 
       try {
         dispatch(loginStart());
-        const response = await loginByEmail(data);
+        const response = await login(data).unwrap();
         dispatch(
           loginSuccess({
             user: response.data,
@@ -47,8 +48,8 @@ const EmailLoginForm = ({ onSuccess, onToggleMobileAuth }) => {
         setApiError('');
         if (onSuccess) onSuccess();
       } catch (error) {
-        dispatch(loginFailure(error.message));
-        setApiError(error.message);
+        dispatch(loginFailure(error.message || 'Login failed'));
+        setApiError(error.message || 'Login failed');
       }
     }
   );

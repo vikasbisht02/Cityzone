@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -11,10 +11,11 @@ import {
   ResetPasswordPage,
   UserDashboard,
   AdminDashboard,
+  SuperAdminDashboard,
 } from '../pages';
 import { ProtectedRoute, PublicRoute, UnrestrictedRoute, RoleBasedRoute } from './ProtectedRoute';
 import { initAuthStart, initAuthSuccess, initAuthFailure } from '../redux/slices/authSlice';
-import { getCurrentUser } from '../services/authService';
+import { useGetCurrentUserQuery } from '../redux/api';
 import { LoadingSpinner } from '../components/Common';
 
 /**
@@ -23,27 +24,24 @@ import { LoadingSpinner } from '../components/Common';
 const AuthInitializer = ({ children }) => {
   const dispatch = useDispatch();
   const authInitialized = useSelector(state => state.auth.authInitialized);
-  const initRef = useRef(false);
+  const { data: currentUserData, isLoading: isFetching, error: fetchError } = useGetCurrentUserQuery(undefined, {
+    skip: authInitialized
+  });
 
+  // Handle auth initialization based on query state
   useEffect(() => {
-    // Prevent double initialization in StrictMode (development)
-    if (initRef.current) return;
-    initRef.current = true;
+    if (authInitialized) {
+      return; // Already initialized
+    }
 
-    const initializeAuth = async () => {
+    if (isFetching) {
       dispatch(initAuthStart());
-      try {
-        const response = await getCurrentUser();
-        // Response is the user object directly
-        dispatch(initAuthSuccess({ user: response.data }));
-      } catch (error) {
-        // If error, user is not authenticated (cookie is invalid or expired)
-        dispatch(initAuthFailure());
-      }
-    };
-
-    initializeAuth();
-  }, [dispatch]);
+    } else if (currentUserData) {
+      dispatch(initAuthSuccess({ user: currentUserData.data }));
+    } else if (fetchError) {
+      dispatch(initAuthFailure());
+    }
+  }, [isFetching, currentUserData, fetchError, authInitialized, dispatch]);
 
   // Wait until auth initialization is complete before rendering routes
   if (!authInitialized) {
@@ -51,6 +49,20 @@ const AuthInitializer = ({ children }) => {
   }
 
   return children;
+};
+
+/**
+ * Dashboard Redirect - Route users to correct dashboard based on their role
+ */
+const DashboardRedirect = () => {
+  const { role } = useSelector(state => state.auth);
+  
+  if (role === 'superadmin') {
+    return <Navigate to="/dashboard/superadmin" replace />;
+  } else if (role === 'admin') {
+    return <Navigate to="/dashboard/admin" replace />;
+  }
+  return <Navigate to="/dashboard/user" replace />;
 };
 
 /**
@@ -115,7 +127,7 @@ const AppRoutes = () => {
           path="/dashboard/user"
           element={
             <ProtectedRoute>
-              <RoleBasedRoute allowedRoles={['user', 'admin', 'superadmin']}>
+              <RoleBasedRoute allowedRoles={['user']}>
                 <UserDashboard />
               </RoleBasedRoute>
             </ProtectedRoute>
@@ -127,15 +139,27 @@ const AppRoutes = () => {
           path="/dashboard/admin"
           element={
             <ProtectedRoute>
-              <RoleBasedRoute allowedRoles={['admin', 'superadmin']}>
+              <RoleBasedRoute allowedRoles={['admin']}>
                 <AdminDashboard />
               </RoleBasedRoute>
             </ProtectedRoute>
           }
         />
 
+        {/* ==================== PROTECTED SUPER ADMIN ROUTES ==================== */}
+        <Route
+          path="/dashboard/superadmin"
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['superadmin']}>
+                <SuperAdminDashboard />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          }
+        />
+
         {/* ==================== LEGACY ROUTE REDIRECTS ==================== */}
-        <Route path="/dashboard" element={<Navigate to="/dashboard/user" />} />
+        <Route path="/dashboard" element={<DashboardRedirect />} />
 
         {/* ==================== 404 CATCH ALL ==================== */}
         <Route path="*" element={<Navigate to="/" />} />

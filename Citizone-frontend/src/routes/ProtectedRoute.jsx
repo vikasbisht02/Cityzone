@@ -42,7 +42,9 @@ const PublicRoute = ({ children }) => {
 
   if (isAuthenticated) {
     // Redirect to appropriate dashboard based on role
-    if (role === 'admin' || role === 'superadmin') {
+    if (role === 'superadmin') {
+      return <Navigate to="/dashboard/superadmin" state={{ from: location }} replace />;
+    } else if (role === 'admin') {
       return <Navigate to="/dashboard/admin" state={{ from: location }} replace />;
     }
     return <Navigate to="/dashboard/user" state={{ from: location }} replace />;

@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/Layout/MainLayout';
 import { Card, Button, LoadingSpinner } from '../components/Common';
-import { getCurrentUser } from '../services/authService';
+import { useGetCurrentUserQuery } from '../redux/api';
 import { setUser } from '../redux/slices/authSlice';
 
 /**
@@ -14,6 +14,9 @@ const UserDashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user, isAuthenticated, isLoading } = useSelector(state => state.auth);
+  const { data: currentUserData, isLoading: isFetchingUser, error: fetchError } = useGetCurrentUserQuery(undefined, {
+    skip: !!user || !isAuthenticated
+  });
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -21,20 +24,10 @@ const UserDashboard = () => {
       return;
     }
 
-    // Fetch current user on mount
-    const fetchUser = async () => {
-      try {
-        const response = await getCurrentUser();
-        dispatch(setUser(response.data));
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      }
-    };
-
-    if (!user) {
-      fetchUser();
+    if (currentUserData && !user) {
+      dispatch(setUser(currentUserData.data));
     }
-  }, [isAuthenticated, user, navigate, dispatch]);
+  }, [isAuthenticated, user, navigate, dispatch, currentUserData]);
 
   if (!isAuthenticated) {
     return null;

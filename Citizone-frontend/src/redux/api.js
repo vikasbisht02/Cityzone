@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
 import { logout, refreshToken } from './slices/authSlice';
+import { AUTH_ENDPOINTS } from '../constants/apiEndpoints';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_BASE_URL,
@@ -63,7 +64,7 @@ export const apiSlice = createApi({
     // Auth endpoints
     login: builder.mutation({
       query: (credentials) => ({
-        url: '/auth/login',
+        url: AUTH_ENDPOINTS.LOGIN_EMAIL,
         method: 'POST',
         body: credentials,
       }),
@@ -71,7 +72,7 @@ export const apiSlice = createApi({
     
     loginWithPhone: builder.mutation({
       query: (credentials) => ({
-        url: '/auth/login-phone',
+        url: AUTH_ENDPOINTS.MOBILE_AUTH,
         method: 'POST',
         body: credentials,
       }),
@@ -79,7 +80,7 @@ export const apiSlice = createApi({
     
     register: builder.mutation({
       query: (userData) => ({
-        url: '/auth/register',
+        url: AUTH_ENDPOINTS.REGISTER_EMAIL,
         method: 'POST',
         body: userData,
       }),
@@ -87,7 +88,7 @@ export const apiSlice = createApi({
     
     forgotPassword: builder.mutation({
       query: (email) => ({
-        url: '/auth/forgot-password',
+        url: AUTH_ENDPOINTS.FORGOT_PASSWORD,
         method: 'POST',
         body: { email },
       }),
@@ -95,7 +96,7 @@ export const apiSlice = createApi({
     
     resetPassword: builder.mutation({
       query: ({ token, password }) => ({
-        url: '/auth/reset-password',
+        url: AUTH_ENDPOINTS.RESET_PASSWORD,
         method: 'POST',
         body: { token, password },
       }),
@@ -103,7 +104,7 @@ export const apiSlice = createApi({
     
     verifyEmail: builder.mutation({
       query: (token) => ({
-        url: '/auth/verify-email',
+        url: AUTH_ENDPOINTS.VERIFY_OTP,
         method: 'POST',
         body: { token },
       }),
@@ -111,17 +112,50 @@ export const apiSlice = createApi({
     
     resendVerification: builder.mutation({
       query: (email) => ({
-        url: '/auth/resend-verification',
+        url: AUTH_ENDPOINTS.FORGOT_PASSWORD,
         method: 'POST',
         body: { email },
       }),
     }),
     
-    logout: builder.mutation({
+    mobileAuth: builder.mutation({
+      query: (number) => ({
+        url: AUTH_ENDPOINTS.MOBILE_AUTH,
+        method: 'POST',
+        body: { number },
+      }),
+    }),
+    
+    verifyOTP: builder.mutation({
+      query: (verificationCode) => ({
+        url: AUTH_ENDPOINTS.VERIFY_OTP,
+        method: 'POST',
+        body: { verificationCode },
+      }),
+    }),
+    
+    getCurrentUser: builder.query({
       query: () => ({
-        url: '/auth/logout',
+        url: AUTH_ENDPOINTS.GET_CURRENT_USER,
         method: 'POST',
       }),
+      providesTags: ['User'],
+    }),
+    
+    verifyFirebaseToken: builder.mutation({
+      query: (idToken) => ({
+        url: AUTH_ENDPOINTS.FIREBASE_VERIFY,
+        method: 'POST',
+        body: { idToken },
+      }),
+    }),
+    
+    logout: builder.mutation({
+      query: () => ({
+        url: AUTH_ENDPOINTS.LOGOUT,
+        method: 'POST',
+      }),
+      invalidatesTags: ['User', 'Profile'],
     }),
     
     // User endpoints
@@ -170,6 +204,10 @@ export const {
   useLoginMutation,
   useLoginWithPhoneMutation,
   useRegisterMutation,
+  useMobileAuthMutation,
+  useVerifyOTPMutation,
+  useGetCurrentUserQuery,
+  useVerifyFirebaseTokenMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useVerifyEmailMutation,

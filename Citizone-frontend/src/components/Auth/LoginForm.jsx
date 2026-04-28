@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginStart, loginSuccess, loginFailure } from '../../redux/slices/authSlice';
+import { useLoginMutation } from '../../redux/api';
 import { useForm, useAsyncCall } from '../../hooks';
 import { validateLoginForm } from '../../utils/validators';
 import { Button, Input, Alert, LoadingSpinner } from '../Common';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../constants';
+
 
 /**
  * Login Form Component
@@ -14,6 +16,7 @@ import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../constants';
  */
 const LoginForm = ({ onSuccess }) => {
   const dispatch = useDispatch();
+  const [login] = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState('');
 
@@ -22,7 +25,7 @@ const LoginForm = ({ onSuccess }) => {
     async (data) => {
       try {
         dispatch(loginStart());
-        const response = await loginUser(data);
+        const response = await login(data).unwrap();
         dispatch(loginSuccess({
           user: response.user,
           token: response.token,
@@ -31,8 +34,8 @@ const LoginForm = ({ onSuccess }) => {
         setApiError('');
         if (onSuccess) onSuccess();
       } catch (error) {
-        dispatch(loginFailure(error.message));
-        setApiError(error.message);
+        dispatch(loginFailure(error.message || 'Login failed'));
+        setApiError(error.message || 'Login failed');
       }
     }
   );
